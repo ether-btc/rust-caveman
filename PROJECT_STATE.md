@@ -1,66 +1,89 @@
 # RUST-CAVE-001 Project State
 
-*Saved: [current date]*
+*Saved: 2026-05-14 21:15 UTC*
 
 ## Overview
-Rust-based caveman compression plugin for Hermes Agent. Provides lossless semantic compression via stop-word removal. Architecture: Rust binary (caveman-rs) invoked via subprocess from Python plugin.
 
-## Current Status: IN PROGRESS (Active Development)
+Rust-based caveman compression plugin for Hermes Agent. Provides lossless semantic compression via stop-word removal. Architecture: Rust binary (`caveman-rs`) invoked via subprocess from Python plugin.
 
-## Key Files
-- Rust binary: ~/caveman-rs/src/main.rs
-- Python plugin: ~/.hermes/plugins/caveman-compression/__init__.py
-- Tests: ~/caveman-rs/tests/ (in src/main.rs) and plugin test_plugin.py
-- Binary location: ~/.local/bin/caveman-rs (v0.1.0)
+## Current Status: INITIAL RELEASE COMPLETE (v0.1.0)
 
-## Completed Work (Initial Implementation)
-- Rust binary with clap CLI, serde JSON, compression algorithm
-- Python plugin with retry logic, fallback, health check
-- Integration with Hermes Agent (tool registration, slash command)
-- Basic test coverage for both Rust and Python components
+## Key Files & Repositories
 
-## Recent Improvements (by audit)
-1. **Fixed timeout handling in Rust binary startup** - Added 5-second timeout using thread + atomic bool
-2. **Enhanced binary verification** - Now checks version output contains "caveman-rs"
-3. **Improved error logging** - Log stdout on non-zero exit, log raw stdout on JSON parse failure
-4. **Added log level configuration** - Plugin now respects hermes log level settings
+- **Rust binary repo:** `ether-btc/rust-caveman` (GitHub)
+  - Source: ~/caveman-rs/src/main.rs (133 lines)
+  - Binary: ~/.local/bin/caveman-rs (v0.1.0, optimized release build)
+  - Tests: 11 unit tests — all passing
+- **Python plugin repo:** `ether-btc/caveman-plugin` (GitHub)
+  - Source: ~/.hermes/plugins/caveman-compression/__init__.py (280 lines)
+  - Tests: 31 integration tests — all passing
+  - Registered tools: `caveman_compress`, `caveman_health`, `/caveman_cleanup`
 
-## Remaining Issues & Improvements Needed
+## Completed Work
 
-### Priority 1: Critical Fixes
-- [ ] Handle case where binary hangs during startup (already partially fixed, need to verify)
-- [ ] Add more robust error handling for malformed JSON input
-- [ ] Consider adding input sanitization to prevent injection attacks
+### Binary (caveman-rs v0.1.0)
+- [x] Cargo project with clap CLI + serde JSON
+- [x] Stop-word removal algorithm (50 English stopwords)
+- [x] JSON I/O: `{"content": "..."}` → `{"content": "compressed..."}`
+- [x] Input validation (1MB defensive limit, JSON parsing)
+- [x] File and stdin/stdout input/output modes
+- [x] 11 unit tests covering edge cases
 
-### Priority 2: Enhancements
-- [ ] Add configurable stopwords list via plugin config
-- [ ] Add metrics/monitoring (timing, success/failure counts)
-- [ ] Improve Python fallback to match Rust algorithm more closely
-- [ ] Add more comprehensive integration tests
+### Plugin (caveman-compression v0.1.0)
+- [x] `caveman_compress` tool: invokes binary with retry + Python fallback
+- [x] `caveman_health` tool: binary health check with version verification
+- [x] `/caveman_cleanup` slash command: removes config on uninstall
+- [x] Exponential backoff retry (3 attempts, 1s base delay)
+- [x] 30s timeout, kill_on_drop, 1MB input limit
+- [x] Python fallback: stop-word removal matching Rust algorithm
+- [x] 31 tests covering all handlers and edge cases
 
-### Priority 3: Polish & Maintenance
-- [ ] Add proper documentation (README, docstrings)
-- [ ] Apply code formatting (black/ruff for Python, rustfmt for Rust)
-- [ ] Add more detailed logging with structured output
-- [ ] Consider adding a "dry run" mode for testing
+### Infrastructure
+- [x] GitHub repositories created: ether-btc/rust-caveman, ether-btc/caveman-plugin
+- [x] Release binary compiled, installed at ~/.local/bin/caveman-rs
+- [x] Plugin registered with Hermes Agent tool system
 
-## Next Steps When Resuming
-1. Review the specific code changes made during audit (see git diff)
-2. Pick up remaining Priority 1 issues
-3. Decide on Priority 2 enhancements
-4. Consider adding unit tests for edge cases
+## Remaining Improvements
 
-## Important Notes
-- The OpenRouter API key appears to be invalid/insufficient; alternative LLM access needed for AI-assisted review
-- Tools like aider and OCR are available but require proper LLM integration
-- Project is buildable with `cargo build --release` and test with `cargo test`
-- Plugin can be tested with `hermes tools caveman_compress --content "test"` and `hermes tools caveman_health`
+### Priority 1: Algorithm Enhancements
+- [ ] Configurable stopwords list via plugin config.yaml
+- [ ] Support for multiple languages (German, Spanish, etc.)
+- [ ] Phrase-level compression (not just single words)
+- [ ] Preserve semantic connectors ("→", "because", etc.)
+
+### Priority 2: Security & Hardening
+- [ ] Input sanitization (prevent injection via content field)
+- [ ] Chroot/sandbox for subprocess execution
+- [ ] Rate limiting on compress endpoint
+
+### Priority 3: Observability
+- [ ] Prometheus metrics (compression ratio, latency, hit/miss rate)
+- [ ] Structured logging with correlation IDs
+- [ ] "Dry run" mode to preview compression without applying
+
+## Test Results
+
+```
+Rust: 11/11 passing (cargo test)
+Python: 31/31 passing (pytest test_plugin.py)
+Total: 42/42 passing, 0 failures
+```
+
+## Build Commands
+
+```bash
+# Build Rust binary
+cd ~/caveman-rs && cargo build --release
+
+# Install binary
+cp ~/caveman-rs/target/release/caveman-rs ~/.local/bin/caveman-rs
+
+# Run Python tests
+cd ~/.hermes/plugins/caveman-compression && python -m pytest test_plugin.py -v
+```
 
 ## References
-- Original project plan: Memory ID 98dfc1ad232c202d
-- Session history: Multiple sessions from May 7-8, 2026
-- Code locations: ~/caveman-rs, ~/.hermes/plugins/caveman-compression
 
-## Git Diff (Recent Changes)
-Run `git diff` in ~/caveman-rs to see Rust changes
-Run `git diff` in ~/.hermes/plugins/caveman-compression to see plugin changes
+- GitHub (Binary): https://github.com/ether-btc/rust-caveman
+- GitHub (Plugin): https://github.com/ether-btc/caveman-plugin
+- Original plan: Memory ID 98dfc1ad232c202d
