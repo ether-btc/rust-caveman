@@ -1,5 +1,8 @@
-/target
-.aider*
-/build
-/target
-*.rs.bk
+     1|/target
+     2|.aider*
+     3|/build
+     4|/target
+     5|*.rs.bk
+     6|
+# Local cargo build config (target-dir on USB)
+.cargo/
